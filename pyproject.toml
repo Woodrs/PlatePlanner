@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plateplanner"
+version = "0.1.0"
+description = "Laboratory liquid-transfer planner for Tempest, Bravo, and Floi8"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "streamlit>=1.32.0,<2",
+  "plotly>=5.18.0,<6",
+  "pandas>=2.1.0,<3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0,<9"]
+
+[tool.setuptools.packages.find]
+include = ["plateplanner*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
