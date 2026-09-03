@@ -4,15 +4,20 @@ from __future__ import annotations
 
 from typing import Dict, List
 
+from plateplanner.concentration import (
+    ConcentrationPlanResult,
+    StockDefinition,
+    WellVolumeInputs,
+    plan_plate_concentrations,
+)
 from plateplanner.models import (
     BravoPlan,
     Floi8SourceFeature,
     Floi8Transfer,
     TempestPlan,
-    WellVolume,
     assign_floi8_channels,
 )
-from plateplanner.plates import all_wells, well_id
+from plateplanner.plates import well_id
 
 
 def demo_tempest_plan() -> TempestPlan:
@@ -33,6 +38,33 @@ def demo_tempest_plan() -> TempestPlan:
     plan.assign_stock(2, stock2)
     plan.assign_stock(3, stock3)
     return plan
+
+
+def demo_concentration_plan(
+    *,
+    plate_format: str = "96",
+    plate_id: str = "CONC_DEMO",
+) -> ConcentrationPlanResult:
+    """Demo concentration plan: 200 / 100 / 10 → 90 free; two stocks + normalize ch 12."""
+    stocks = [
+        StockDefinition(channel=1, stock_concentration=1000.0, name="DrugA", units="uM"),
+        StockDefinition(channel=2, stock_concentration=500.0, name="DrugB", units="uM"),
+    ]
+    wells = [well_id(0, c) for c in range(8)]
+    return plan_plate_concentrations(
+        plate_format=plate_format,
+        plate_id=plate_id,
+        wells=wells,
+        defaults=WellVolumeInputs(
+            target_volume_ul=200.0,
+            base_media_volume_ul=100.0,
+            inoculation_volume_ul=10.0,
+        ),
+        stocks=stocks,
+        plate_targets={1: 50.0, 2: 25.0},
+        normalize_channel=12,
+        normalize_label="base media",
+    )
 
 
 def demo_bravo_plan() -> BravoPlan:
