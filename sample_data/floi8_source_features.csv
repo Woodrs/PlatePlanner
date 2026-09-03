@@ -1,0 +1,11 @@
+well,contents,strain_barcode,volume_ul
+A01,LB Media,STR001,100
+A02,LB Media,STR002,100
+A03,Minimal,STR003,80
+A04,Minimal,STR003,80
+B01,LB Media,STR004,100
+B02,YPD,STR005,120
+B03,YPD,STR006,120
+C01,Water,,200
+C02,LB Media,STR007,100
+D01,Minimal,STR008,90
