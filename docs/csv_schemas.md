@@ -3,8 +3,9 @@
 All volumes are in **microliters (µL)**. Well IDs use the shared **A01** style
 (row letter + zero-padded column).
 
-Concentration-based volume calculation is **not** implemented in the MVP; see
-`plateplanner/concentration.py`.
+Tempest supports **volume mode** and **concentration mode**. Concentration
+planning converts target concentrations into `volume_ul` rows using the same
+Tempest export schema; see `plateplanner/concentration.py`.
 
 ---
 
@@ -25,7 +26,7 @@ Variable per-well volumes from up to 12 stock solutions / channels.
 One row per (well × stock_channel) with volume &gt; 0. Rows are ordered by
 `stock_channel`, then `well`.
 
-### Example
+### Example (volume mode)
 
 ```csv
 plate_format,plate_id,stock_channel,well,volume_ul
@@ -33,6 +34,36 @@ plate_format,plate_id,stock_channel,well,volume_ul
 96,DEST_001,1,A02,7.5
 96,DEST_001,2,A01,10
 ```
+
+### Concentration mode
+
+Planning inputs (not CSV columns): `V_target`, `V_base`, `V_inoc`, per-stock
+`C_stock` / `C_target`. Formulas (concentrations w.r.t. **final target volume**):
+
+```text
+V_free      = V_target − V_base − V_inoc
+V_reagent   = C_target × V_target / C_stock
+C_max       = C_stock × V_free / V_target
+V_normalize = V_free − Σ V_reagent
+```
+
+**Normalize / diluent representation:** remaining free volume is exported as
+additional Tempest rows on a configurable **normalize channel** (default
+`stock_channel=12`, UI label “base media”). There is no separate CSV column —
+normalize is an ordinary channel dispense so instrument software needs no
+schema change.
+
+Example (200 µL target, 100 µL base, 10 µL inoc → 90 µL free; DrugA on ch 1 at
+50 µM from 1000 µM stock → 10 µL; normalize 80 µL on ch 12):
+
+```csv
+plate_format,plate_id,stock_channel,well,volume_ul
+96,CONC_001,1,A01,10
+96,CONC_001,12,A01,80
+```
+
+Validation enforced by the planner: non-negative volumes; `V_free ≥ 0`;
+`C_target ≤ C_max`; Σ reagent volumes ≤ `V_free` (optional proportional cap).
 
 ---
 
